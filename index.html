@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/normalize.css" />
+    <link rel="stylesheet" href="./css/accordion.css" />
+</head>
+
+<body>
+
+
+    <section id="accordion-wrapper"></section>
+
+
+    <!-- scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="./js/components/AccordionNode.js"></script>
+    <script src="./js/constants/index.js"></script>
+    <script src="./js/utils/index.js"></script>
+    <script src="./js/mock/accordionData.js"></script>
+    <script>
+        $(() => {
+
+            const insertAccordions = (data) => {
+                const accordions = data.map((el, i) => AccordionNode(el, i + 1));
+                $("#accordion-wrapper").append(...accordions);
+                $(".accordion").children(".content").hide();
+                $(".accordion:first").children(".content").show();
+            }
+
+            const setAccordionToggleSlide = () => {
+                const accordionWrapper = $('#accordion-wrapper');
+                accordionWrapper.click(event => {
+                    const accordion = $(event.target).parents('.accordion');
+                    accordion.children('.content').slideToggle();
+                    accordion.siblings('.accordion').children('.content').slideUp();
+                })
+            }
+
+            $.get("https://api.adviceslip.com/advice", (data, status) => {
+                accordionData[4].description = JSON.parse(data).slip.advice;
+                resetElement(".accordion");
+                insertAccordions(accordionData);
+                setAccordionToggleSlide();
+            })
+
+        })
+    </script>
+</body>
+
+</html>

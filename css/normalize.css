@@ -1,0 +1,30 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Courier New', Courier, monospace;
+    box-sizing: border-box;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    letter-spacing: 2px;
+    font-weight: 400;    
+}
+
+.title::first-letter{
+    text-transform: uppercase;
+}
+
+body {
+    min-height: 100vh;
+    display:grid;
+}
+
+p {
+    line-height: 1.5;
+}
