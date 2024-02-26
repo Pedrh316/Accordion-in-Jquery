@@ -1,1 +1,0 @@
-const SLIDE_DURATION = 300

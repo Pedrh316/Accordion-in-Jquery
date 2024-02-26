@@ -7,27 +7,44 @@
     <title>Document</title>
     <link rel="stylesheet" href="./css/normalize.css" />
     <link rel="stylesheet" href="./css/accordion.css" />
+    <link rel="stylesheet" href="./css/search.css" />
+    <link rel="stylesheet" href="./css/icons.css" />
 </head>
 
 <body>
 
-
-    <section id="accordion-wrapper"></section>
+    <div class="container">
+        <search class="search">
+            <div class="search-input-wrapper">
+                <input class="search-input" type="text" placeholder="Pesquisar...">
+                <div class="right">
+                    <button>
+                        <i class="fa-solid fa-magnifying-glass magnifier-glass"></i>
+                    </button>
+                </div>
+            </div>
+            <section class="search-dropdown"></section>
+        </search>
+        <section id="accordion-wrapper"></section>
+    </div>
 
     <!-- scripts -->
     <script src="https://kit.fontawesome.com/150fbb0499.js" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="./js/components/AccordionNode.js"></script>
+    <script src="./js/components/SuggestNode.js"></script>
+    <script src="./js/components/SearchDropdownButton.js"></script>
     <script src="./js/constants/index.js"></script>
     <script src="./js/utils/index.js"></script>
     <script src="./js/mock/accordionData.js"></script>
+    <script src="./js/mock/suggestsData.js"></script>
     <script>
         $(() => {
 
-            const insertAccordions = (data) => {
+            // accordions
+            const appendAccordions = (data) => {
                 const accordions = data.map((el, i) => AccordionNode(el, i + 1));
                 $("#accordion-wrapper").append(...accordions);
-                $(".accordion:first").addClass('show');
             }
 
             const setAccordionToggleSlide = () => {
@@ -42,9 +59,41 @@
             $.get("https://api.adviceslip.com/advice", (data, status) => {
                 accordionData[4].description = JSON.parse(data).slip.advice;
                 resetElement(".accordion");
-                insertAccordions(accordionData);
+                appendAccordions(accordionData);
                 setAccordionToggleSlide();
+                $(".accordion:first").addClass('show');
             })
+
+
+            // search
+            const search = $(".search");
+            search
+                .on('focus', 'input', (e) => {
+                    setTimeout(() => search.find('.search-dropdown').addClass('show'), 100);
+                    showSuggests(e);
+                })
+                .on('blur', 'input', (e) => removeShow(search.find('.search-dropdown')));
+
+
+            const filterSuggests = (text) => suggestsData.filter(suggest => {
+                return suggest.toLowerCase().startsWith(text.toLowerCase());
+            });
+
+            const appendSuggests = (suggests) => {
+                $('.search-dropdown').html('');
+                $('.search-dropdown').append(...suggests.map(suggest => SuggestNode(suggest)), SearchDropdownButton)
+            }
+
+            const showSuggests = (e) => {
+                const suggests = filterSuggests($(e.target).val());
+                const textLength = $(e.target).val().length;
+                const formattedSuggests = suggests.map(suggest => `<b>${suggest.substr(0, textLength)}</b>` + suggest.substring(textLength));
+                appendSuggests(formattedSuggests);
+            }
+
+            search.on('keyup', '.search-input', (e) => showSuggests(e));
+
+
         })
     </script>
 </body>

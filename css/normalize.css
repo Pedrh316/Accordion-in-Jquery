@@ -20,13 +20,37 @@ h6 {
     text-transform: uppercase;
 }
 
-body {
+body>.container {
     min-height: 100vh;
     display:grid;
+    place-items:center;
+    align-content: space-evenly;
+    padding-top:1rem;
+    gap:2rem;
+}
+
+li{
+    list-style-type:none;
+}
+
+input {
+    border:none;
+    outline:none;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+button{
+    border:none;
+    background-color:unset;
 }
 
 p {
     line-height: 1.5;
+}
+
+b {
+    font-weight:600;
+    color:black;
 }
 
 .separator{
