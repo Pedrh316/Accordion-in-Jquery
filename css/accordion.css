@@ -21,6 +21,7 @@
     align-items: center;
     gap: .5rem;
     margin-left: -3.5rem;
+    padding-right:1rem;
 }
 
 #accordion-wrapper .accordion .trigger:hover {
@@ -37,6 +38,35 @@
     background-color: #414;
 }
 
+#accordion-wrapper .icon-wrapper {
+    width:2.5rem;
+    aspect-ratio:1;
+    border-radius:50%;
+    background-color:rgba(0,0,0,.1);
+    display:grid;
+    place-items:center;
+    transition:transform .3s linear;
+}
+
+#accordion-wrapper .accordion.show .icon-wrapper {
+    transform:rotate(90deg);
+}
+
 .ball p {
     color: white;
+}
+
+
+#accordion-wrapper .accordion > .content-wrapper {
+    display:grid;
+    grid-template-rows: 0fr;
+    transition:grid-template-rows .3s;
+}
+
+#accordion-wrapper .accordion.show > .content-wrapper {
+    grid-template-rows:1fr
+}
+
+.accordion > .content-wrapper > .content{
+    overflow:hidden;
 }
