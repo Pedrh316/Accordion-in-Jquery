@@ -2,7 +2,6 @@
     position:relative;
     max-width:600px;
     width:100%;
-    /* margin:auto; */
 }
 
 .search-dropdown {
@@ -16,7 +15,14 @@
     border-top-width:0px;
     border-radius:5px;
     width:100%;
-    overflow:hidden;
+    overflow-y:auto;
+    scrollbar-width: thin;
+    max-height:50vh;
+}
+
+.search-dropdown.show {
+    visibility:visible;
+    transform:translateY(calc(100% + .3rem));
 }
 
 .search-dropdown li{
@@ -27,10 +33,6 @@
     background-color:rgba(240,240,240,.5);
 }
 
-.search-dropdown.show {
-    visibility:visible;
-    transform:translateY(calc(100% + .3rem));
-}
 
 .search-dropdown .item {
     width:100%;

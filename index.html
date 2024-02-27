@@ -16,7 +16,7 @@
     <div class="container">
         <search class="search">
             <div class="search-input-wrapper">
-                <input class="search-input" type="text" placeholder="Pesquisar...">
+                <input class="search-input" type="search" placeholder="Pesquisar...">
                 <div class="right">
                     <button>
                         <i class="fa-solid fa-magnifying-glass magnifier-glass"></i>
@@ -33,7 +33,6 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="./js/components/AccordionNode.js"></script>
     <script src="./js/components/SuggestNode.js"></script>
-    <script src="./js/components/SearchDropdownButton.js"></script>
     <script src="./js/constants/index.js"></script>
     <script src="./js/utils/index.js"></script>
     <script src="./js/mock/accordionData.js"></script>
@@ -67,46 +66,55 @@
             // search
             const search = $(".search");
 
-            $(window).on('keyup', (e) => {
-                (e.keyCode == 27) && search.find('.search-input').blur();
-            })
-
             search.on({
-                'focus': (e) => {
-                    setTimeout(() => search.find('.search-dropdown').addClass('show'), 100);
-                    showSuggests(e);
+                'blur': (e) => {
+                    removeShow(search.find('.search-dropdown'));
                 },
-                'blur': (e) => removeShow(search.find('.search-dropdown'))
-            }, "input")
+                'focus': (e, paramEvent) => {
+                    setTimeout(() => search.find('.search-dropdown').addClass('show'), 100);
+                    appendSuggests(updateSuggests(paramEvent));
+                },
+                'keyup': (e) => {
+                    if (e.keyCode == 27) return search.trigger('blur');
+                    search.trigger('focus', e);
+                },
+            }).on({
+                'click': (e) => {
+                    setTimeout(() => search.find('.search-dropdown').addClass('show'), 100);
+                    appendSuggests(updateSuggests(e));
+                }
+            }, '.search-input')
 
-
-            const filterSuggests = (text) => suggestsData.filter(suggest => {
+            const getSuggests = (text) => suggestsData.filter(suggest => {
                 return suggest.toLowerCase().includes(text.toLowerCase());
             });
 
             const appendSuggests = (suggests) => {
                 $('.search-dropdown').html('');
-                $('.search-dropdown').append(...suggests.map(suggest => SuggestNode(suggest)), SearchDropdownButton)
+                $('.search-dropdown').append(...suggests.map(suggest => SuggestNode(suggest)));
+                $('.search .suggest').on('click', (e) => {
+                    $('.search-input').val($(e.currentTarget).find('.suggest-text').text());
+                    removeShow('.search-dropdown');
+                })
             }
 
             const formatSuggest = (suggest, inputValue) => {
-                const textLength = inputValue.length;
-                const indexOfMatch = suggest.toLowerCase().indexOf(inputValue.toLowerCase());
-                str = suggest.replace(new RegExp(inputValue, 'gi'), (a, b) => {
-                    return `<b>${a}</b>`
-                })
-                return str;
+                return suggest.replace(new RegExp(inputValue, 'gi'), (str, i) => `<b>${str}</b>`);
             }
 
-            const showSuggests = (e) => {
+            const updateSuggests = (e) => {
                 const inputValue = $(e.target).val();
-                const suggests = filterSuggests(inputValue);
-                const formattedSuggests = suggests.map(suggest => formatSuggest(suggest, inputValue));
-                appendSuggests(formattedSuggests);
+                const suggests = getSuggests(inputValue);
+                return suggests.map(suggest => formatSuggest(suggest, inputValue));
             }
 
-            search.on('keyup', '.search-input', (e) => showSuggests(e));
-
+            // window events
+            $(window).on({
+                "click": (e) => {
+                    const thereIsSearchParent = $(e.target).closest('.search').length != 0;
+                    if (!thereIsSearchParent) search.trigger('blur');
+                }
+            })
 
         })
     </script>
