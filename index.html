@@ -40,7 +40,6 @@
     <script src="./js/mock/suggestsData.js"></script>
     <script>
         $(() => {
-
             // accordions
             const appendAccordions = (data) => {
                 const accordions = data.map((el, i) => AccordionNode(el, i + 1));
@@ -67,16 +66,22 @@
 
             // search
             const search = $(".search");
-            search
-                .on('focus', 'input', (e) => {
+
+            $(window).on('keyup', (e) => {
+                (e.keyCode == 27) && search.find('.search-input').blur();
+            })
+
+            search.on({
+                'focus': (e) => {
                     setTimeout(() => search.find('.search-dropdown').addClass('show'), 100);
                     showSuggests(e);
-                })
-                .on('blur', 'input', (e) => removeShow(search.find('.search-dropdown')));
+                },
+                'blur': (e) => removeShow(search.find('.search-dropdown'))
+            }, "input")
 
 
             const filterSuggests = (text) => suggestsData.filter(suggest => {
-                return suggest.toLowerCase().startsWith(text.toLowerCase());
+                return suggest.toLowerCase().includes(text.toLowerCase());
             });
 
             const appendSuggests = (suggests) => {
@@ -84,10 +89,19 @@
                 $('.search-dropdown').append(...suggests.map(suggest => SuggestNode(suggest)), SearchDropdownButton)
             }
 
+            const formatSuggest = (suggest, inputValue) => {
+                const textLength = inputValue.length;
+                const indexOfMatch = suggest.toLowerCase().indexOf(inputValue.toLowerCase());
+                str = suggest.replace(new RegExp(inputValue, 'gi'), (a, b) => {
+                    return `<b>${a}</b>`
+                })
+                return str;
+            }
+
             const showSuggests = (e) => {
-                const suggests = filterSuggests($(e.target).val());
-                const textLength = $(e.target).val().length;
-                const formattedSuggests = suggests.map(suggest => `<b>${suggest.substr(0, textLength)}</b>` + suggest.substring(textLength));
+                const inputValue = $(e.target).val();
+                const suggests = filterSuggests(inputValue);
+                const formattedSuggests = suggests.map(suggest => formatSuggest(suggest, inputValue));
                 appendSuggests(formattedSuggests);
             }
 
