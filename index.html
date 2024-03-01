@@ -14,18 +14,21 @@
 <body>
 
     <div class="container">
-        <search class="search">
+        <search id="main-search" class="search">
             <div class="search-input-wrapper">
-                <input class="search-input" type="search" placeholder="Pesquisar...">
+                <input aria-controls="search-suggests" id="main-search-input" aria-expanded="false"
+                    aria-autocomplete="list" role="combobox" class="search-input" type="search"
+                    placeholder="Pesquisar..." />
                 <div class="right">
                     <button>
                         <i class="fa-solid fa-magnifying-glass magnifier-glass"></i>
                     </button>
                 </div>
             </div>
-            <section class="search-dropdown"></section>
+            <section id="search-suggests" aria-label="suggests" class="search-dropdown"></section>
         </search>
         <section id="accordion-wrapper"></section>
+        <p>Teste</p>
     </div>
 
     <!-- scripts -->
@@ -35,28 +38,17 @@
     <script src="./js/components/SuggestNode.js"></script>
     <script src="./js/constants/index.js"></script>
     <script src="./js/utils/index.js"></script>
+    <script src="./js/utils/search.js"></script>
+    <script src="./js/utils/accordion.js"></script>
     <script src="./js/mock/accordionData.js"></script>
     <script src="./js/mock/suggestsData.js"></script>
     <script>
         $(() => {
             // accordions
-            const appendAccordions = (data) => {
-                const accordions = data.map((el, i) => AccordionNode(el, i + 1));
-                $("#accordion-wrapper").append(...accordions);
-            }
-
-            const setAccordionToggleSlide = () => {
-                const accordionWrapper = $('#accordion-wrapper');
-                accordionWrapper.on("click", ".trigger", event => {
-                    const accordion = $(event.target).parents('.accordion');
-                    accordion.toggleClass('show');
-                    accordion.siblings('.accordion').removeClass('show');
-                })
-            }
 
             $.get("https://api.adviceslip.com/advice", (data, status) => {
                 accordionData[4].description = JSON.parse(data).slip.advice;
-                resetElement(".accordion");
+                resetElement($(".accordion"));
                 appendAccordions(accordionData);
                 setAccordionToggleSlide();
                 $(".accordion:first").addClass('show');
@@ -64,14 +56,15 @@
 
 
             // search
-            const search = $(".search");
+            const search = $("#main-search");
+            const mainInput = $("#main-search-input");
 
             search.on({
                 'blur': (e) => {
-                    removeShow(search.find('.search-dropdown'));
+                    removeWithExpandElement(mainInput, search.find('.search-dropdown'));
                 },
                 'focus': (e, paramEvent) => {
-                    setTimeout(() => search.find('.search-dropdown').addClass('show'), 100);
+                    setTimeout(() => openWithExpandElement(mainInput, search.find('.search-dropdown')), 100);
                     appendSuggests(updateSuggests(paramEvent));
                 },
                 'keyup': (e) => {
@@ -79,36 +72,11 @@
                     search.trigger('focus', e);
                 },
             }).on({
-                'click': (e) => {
-                    setTimeout(() => search.find('.search-dropdown').addClass('show'), 100);
-                    appendSuggests(updateSuggests(e));
+                'click focus': (e) => {
+                    search.trigger('focus', e);
                 }
-            }, '.search-input')
+            }, '.search-input');
 
-            const getSuggests = (text) => suggestsData.filter(suggest => {
-                return suggest.toLowerCase().includes(text.toLowerCase());
-            });
-
-            const appendSuggests = (suggests) => {
-                $('.search-dropdown').html('');
-                $('.search-dropdown').append(...suggests.map(suggest => SuggestNode(suggest)));
-                $('.search .suggest').on('click', (e) => {
-                    $('.search-input').val($(e.currentTarget).find('.suggest-text').text());
-                    removeShow('.search-dropdown');
-                })
-            }
-
-            const formatSuggest = (suggest, inputValue) => {
-                return suggest.replace(new RegExp(inputValue, 'gi'), (str, i) => `<b>${str}</b>`);
-            }
-
-            const updateSuggests = (e) => {
-                const inputValue = $(e.target).val();
-                const suggests = getSuggests(inputValue);
-                return suggests.map(suggest => formatSuggest(suggest, inputValue));
-            }
-
-            // window events
             $(window).on({
                 "click": (e) => {
                     const thereIsSearchParent = $(e.target).closest('.search').length != 0;
