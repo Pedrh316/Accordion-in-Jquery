@@ -1,5 +1,5 @@
 const AccordionNode = ({ title, description }, step) => `
-<article class="accordion">
+<article class="accordion" tabindex="0">
     <div class="trigger">
         <div class="ball">
             <p>${step}</p>

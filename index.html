@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Boilerplates</title>
     <link rel="stylesheet" href="./css/normalize.css" />
     <link rel="stylesheet" href="./css/accordion.css" />
     <link rel="stylesheet" href="./css/search.css" />
@@ -21,12 +21,16 @@
                     aria-autocomplete="list" role="combobox" class="search-input" type="search"
                     placeholder="Pesquisar..." />
                 <div class="right">
+                    <button id="reset-main-search-input" class="show">
+                        <i class="fa-solid fa-xmark icon close"></i>
+                    </button>
                     <button>
-                        <i class="fa-solid fa-magnifying-glass magnifier-glass"></i>
+                        <i class="fa-solid fa-magnifying-glass magnifier-glass icon"></i>
                     </button>
                 </div>
             </div>
-            <section id="search-suggests" aria-busy="true" aria-label="suggests" class="search-dropdown"></section>
+            <section id="search-suggests" tabindex="-1" aria-busy="true" aria-label="suggests" class="search-dropdown">
+            </section>
         </search>
         <section id="accordion-wrapper" aria-busy="true"></section>
     </div>
@@ -62,24 +66,44 @@
             // search
             const search = $("#main-search");
             const mainInput = $("#main-search-input");
-            const mainSearchDropdown = $("#main-search #search-suggests")
+            const mainSearchDropdown = $("#main-search #search-suggests");
+            const resetInputBtn = $('#reset-main-search-input');
+
+            const loadMainSearchDropdown = () => {
+                mainSearchDropdown.html(Loading);
+                mainSearchDropdown.attr('aria-busy', true);
+                (async () => {
+                    const suggests = await updateSuggests(mainInput.val());
+                    (suggests.length == 0) ?
+                        mainSearchDropdown.html('<div class="item"><p class="container">Dado não encontrado...</p></div>')
+                        : appendSuggests(suggests);
+                    mainSearchDropdown.find('.loading').remove();
+                    mainSearchDropdown.attr('aria-busy', false);
+                })()
+            }
 
             search.on({
-                'blur': (e) => removeWithExpandElement(mainInput, mainSearchDropdown),
-                'focus': (e, paramEvent) => {
+                'focus click keyup': (e) => {
+                    if (mainInput.val().length == 0) {
+                        removeWithExpandElement(mainInput, mainSearchDropdown)
+                        resetInputBtn.removeClass('show');
+                        return;
+                    };
+                    resetInputBtn.addClass('show');
                     openWithExpandElement(mainInput, mainSearchDropdown);
-                    mainSearchDropdown.html(Loading);
-                    (async () => {
-                        await appendSuggests(await updateSuggests(paramEvent))
-                        mainSearchDropdown.find('.loading').remove();
-                    })()
+                    loadMainSearchDropdown();
                 },
-                'keyup': (e) => e.keyCode == 27 ? search.trigger('blur') : search.trigger('focus', e)
-            }).on({
-                'focus': (e) => search.trigger('focus', e)
             }, '.search-input');
 
+            resetInputBtn.on("click", () => {
+                mainInput.val('');
+                mainInput.trigger('focus');
+            })
+
             $(window).on({
+                "keyup": (e) => {
+                    if (e.key == "Escape") removeWithExpandElement(mainInput, mainSearchDropdown);
+                },
                 "click": (e) => {
                     const thereIsSearchParent = $(e.target).closest('.search').length != 0;
                     if (!thereIsSearchParent) search.trigger('blur');
