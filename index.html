@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="./css/accordion.css" />
     <link rel="stylesheet" href="./css/search.css" />
     <link rel="stylesheet" href="./css/icons.css" />
+    <link rel="stylesheet" href="./css/loading.css" />
 </head>
 
 <body>
@@ -25,10 +26,9 @@
                     </button>
                 </div>
             </div>
-            <section id="search-suggests" aria-label="suggests" class="search-dropdown"></section>
+            <section id="search-suggests" aria-busy="true" aria-label="suggests" class="search-dropdown"></section>
         </search>
-        <section id="accordion-wrapper"></section>
-        <p>Teste</p>
+        <section id="accordion-wrapper" aria-busy="true"></section>
     </div>
 
     <!-- scripts -->
@@ -36,6 +36,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="./js/components/AccordionNode.js"></script>
     <script src="./js/components/SuggestNode.js"></script>
+    <script src="./js/components/Loading.js"></script>
     <script src="./js/constants/index.js"></script>
     <script src="./js/utils/index.js"></script>
     <script src="./js/utils/search.js"></script>
@@ -44,37 +45,38 @@
     <script src="./js/mock/suggestsData.js"></script>
     <script>
         $(() => {
-            // accordions
 
+            // accordions
+            const accordionWrapper = $("#accordion-wrapper")
+            accordionWrapper.html(Loading);
             $.get("https://api.adviceslip.com/advice", (data, status) => {
+                resetElement(accordionWrapper);
                 accordionData[4].description = JSON.parse(data).slip.advice;
-                resetElement($(".accordion"));
                 appendAccordions(accordionData);
                 setAccordionToggleSlide();
                 $(".accordion:first").addClass('show');
+                accordionWrapper.attr('aria-busy', false);
             })
 
 
             // search
             const search = $("#main-search");
             const mainInput = $("#main-search-input");
+            const mainSearchDropdown = $("#main-search #search-suggests")
 
             search.on({
-                'blur': (e) => {
-                    removeWithExpandElement(mainInput, search.find('.search-dropdown'));
-                },
+                'blur': (e) => removeWithExpandElement(mainInput, mainSearchDropdown),
                 'focus': (e, paramEvent) => {
-                    setTimeout(() => openWithExpandElement(mainInput, search.find('.search-dropdown')), 100);
-                    appendSuggests(updateSuggests(paramEvent));
+                    openWithExpandElement(mainInput, mainSearchDropdown);
+                    mainSearchDropdown.html(Loading);
+                    (async () => {
+                        await appendSuggests(await updateSuggests(paramEvent))
+                        mainSearchDropdown.find('.loading').remove();
+                    })()
                 },
-                'keyup': (e) => {
-                    if (e.keyCode == 27) return search.trigger('blur');
-                    search.trigger('focus', e);
-                },
+                'keyup': (e) => e.keyCode == 27 ? search.trigger('blur') : search.trigger('focus', e)
             }).on({
-                'click focus': (e) => {
-                    search.trigger('focus', e);
-                }
+                'focus': (e) => search.trigger('focus', e)
             }, '.search-input');
 
             $(window).on({
