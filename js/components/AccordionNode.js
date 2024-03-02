@@ -1,6 +1,6 @@
 const AccordionNode = ({ title, description }, step) => `
-<article class="accordion" tabindex="0">
-    <div class="trigger">
+<article class="accordion">
+    <div class="trigger" aria-expanded="false" aria-controls="step-content-${step}">
         <div class="ball">
             <p>${step}</p>
         </div>
@@ -15,7 +15,7 @@ const AccordionNode = ({ title, description }, step) => `
             </div>
         </div>
     </div>
-    <div class="content-wrapper">
+    <div class="content-wrapper" id="step-content-${step}">
         <div class="content">
             <p>${description}</p>
         </div>

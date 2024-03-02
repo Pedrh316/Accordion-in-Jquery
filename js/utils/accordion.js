@@ -3,11 +3,16 @@ const appendAccordions = (data) => {
     $("#accordion-wrapper").append(...accordions);
 }
 
-const setAccordionToggleSlide = () => {
+const addAccordionHandler = () => {
     const accordionWrapper = $('#accordion-wrapper');
-    accordionWrapper.on("click", ".trigger", event => {
-        const accordion = $(event.target).parents('.accordion');
-        accordion.toggleClass('show');
-        accordion.siblings('.accordion').removeClass('show');
+    accordionWrapper.on({
+        "click": (e) => {
+            const target = $(e.target);
+            const accordion = $(target.parents('.accordion'));
+            const trigger = $(accordion.find('.trigger'));
+            accordion.hasClass('show') ? removeWithExpandElement(trigger, accordion) : openWithExpandElement(trigger, accordion);
+            const accordionSiblings = $(accordion.siblings('.accordion'));
+            removeWithExpandElement($(accordionSiblings.find('.trigger')), accordionSiblings);
+        }
     })
 }

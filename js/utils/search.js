@@ -24,3 +24,17 @@ const formatSuggest = (suggest, inputValue) => {
 const updateSuggests = async (inputValue) => {
     return getSuggests(inputValue).then((suggests) => suggests.map(suggest => formatSuggest(suggest, inputValue)));
 }
+
+const loadMainSearchDropdown = () => {
+    const mainSearchDropdown = $("#main-search #search-suggests");
+    mainSearchDropdown.html(Loading);
+    mainSearchDropdown.attr('aria-busy', true);
+    (async () => {
+        const suggests = await updateSuggests(mainInput.val());
+    (suggests.length == 0) ?
+    mainSearchDropdown.html('<div class="item"><p class="container">Dado não encontrado...</p></div>')
+    : appendSuggests(suggests);
+    mainSearchDropdown.find('.loading').remove();
+    mainSearchDropdown.attr('aria-busy', false);
+    })()
+}

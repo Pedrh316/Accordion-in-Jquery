@@ -47,66 +47,21 @@
     <script src="./js/utils/accordion.js"></script>
     <script src="./js/mock/accordionData.js"></script>
     <script src="./js/mock/suggestsData.js"></script>
+    <script src="./js/workers/accordion.js"></script>
+    <script src="./js/workers/search.js"></script>
     <script>
+        const search = $("#main-search");
+        const mainInput = $("#main-search-input");
+        const mainSearchDropdown = $("#main-search #search-suggests");
+        const resetInputBtn = $('#reset-main-search-input');
         $(() => {
-
-            // accordions
-            const accordionWrapper = $("#accordion-wrapper")
-            accordionWrapper.html(Loading);
-            $.get("https://api.adviceslip.com/advice", (data, status) => {
-                resetElement(accordionWrapper);
-                accordionData[4].description = JSON.parse(data).slip.advice;
-                appendAccordions(accordionData);
-                setAccordionToggleSlide();
-                $(".accordion:first").addClass('show');
-                accordionWrapper.attr('aria-busy', false);
-            })
-
-
-            // search
-            const search = $("#main-search");
-            const mainInput = $("#main-search-input");
-            const mainSearchDropdown = $("#main-search #search-suggests");
-            const resetInputBtn = $('#reset-main-search-input');
-
-            const loadMainSearchDropdown = () => {
-                mainSearchDropdown.html(Loading);
-                mainSearchDropdown.attr('aria-busy', true);
-                (async () => {
-                    const suggests = await updateSuggests(mainInput.val());
-                    (suggests.length == 0) ?
-                        mainSearchDropdown.html('<div class="item"><p class="container">Dado não encontrado...</p></div>')
-                        : appendSuggests(suggests);
-                    mainSearchDropdown.find('.loading').remove();
-                    mainSearchDropdown.attr('aria-busy', false);
-                })()
-            }
-
-            search.on({
-                'focus click keyup': (e) => {
-                    if (mainInput.val().length == 0) {
-                        removeWithExpandElement(mainInput, mainSearchDropdown)
-                        resetInputBtn.removeClass('show');
-                        return;
-                    };
-                    resetInputBtn.addClass('show');
-                    openWithExpandElement(mainInput, mainSearchDropdown);
-                    loadMainSearchDropdown();
-                },
-            }, '.search-input');
-
-            resetInputBtn.on("click", () => {
-                mainInput.val('');
-                mainInput.trigger('focus');
-            })
-
             $(window).on({
                 "keyup": (e) => {
                     if (e.key == "Escape") removeWithExpandElement(mainInput, mainSearchDropdown);
                 },
                 "click": (e) => {
                     const thereIsSearchParent = $(e.target).closest('.search').length != 0;
-                    if (!thereIsSearchParent) search.trigger('blur');
+                    if (!thereIsSearchParent) removeWithExpandElement(mainInput, mainSearchDropdown);
                 }
             })
 
